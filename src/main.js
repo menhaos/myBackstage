@@ -36,6 +36,10 @@ Vue.use(ElementUI, { locale });
 //引入API接口
 import api from '@/api';
 
+//注册全局组件
+import CategorySelect from '@/components/CategorySelect';
+Vue.component('CategorySelect', CategorySelect);
+
 Vue.config.productionTip = false;
 
 new Vue({
