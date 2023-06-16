@@ -35,7 +35,7 @@
         <el-select
           v-model="category3Id"
           placeholder="活动区域"
-          @change="getAttrInfo"
+          @change="getInfoList"
           :disabled="selectDisabled"
         >
           <el-option
@@ -67,9 +67,6 @@ export default {
   },
   props: ['selectDisabled'],
   methods: {
-    onSubmit() {
-      console.log('submit!')
-    },
     //请求一级分类列表
     async getCategory1() {
       let result = await this.$API.attr.reqGetCategory1()
@@ -122,10 +119,10 @@ export default {
       this.$emit('resetAttrList')
     },
     //三级列表的value值确定后，发起网络请求获取数据
-    getAttrInfo() {
+    getInfoList() {
       const { category1Id, category2Id, category3Id } = this
       //由于数据展示是在父组件的，触发父组件的自定义方法，父组件获取数据进行展示
-      this.$emit('getAttrInfo', category1Id, category2Id, category3Id)
+      this.$emit('getInfoList', category1Id, category2Id, category3Id)
     },
   },
   mounted() {

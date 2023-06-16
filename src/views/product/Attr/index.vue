@@ -2,7 +2,7 @@
   <div>
     <el-card shadow="always" style="margin: 20px 10px">
       <CategorySelect
-        @getAttrInfo="getAttrInfo"
+        @getInfoList="getAttrInfo"
         @resetAttrList="resetAttrList"
         :selectDisabled="!isShowAttrList"
       ></CategorySelect>
