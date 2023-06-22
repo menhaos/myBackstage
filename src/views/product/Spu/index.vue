@@ -46,13 +46,14 @@
           ></el-table-column>
           <!-- 操作 -->
           <el-table-column label="操作" align="center">
-            <template v-slot="{ row, $index }">
+            <template v-slot="{ row }">
               <el-tooltip content="添加sku" placement="top" :open-delay="500">
                 <el-button
                   type="success"
                   icon="el-icon-plus"
                   size="small"
                   style="margin: 0 5px"
+                  @click="addSku(row)"
                 ></el-button>
               </el-tooltip>
               <el-tooltip content="编辑spu" placement="top" :open-delay="500">
@@ -70,6 +71,7 @@
                   icon="el-icon-info"
                   size="small"
                   style="margin: 0 5px"
+                  @click="showSkuInfo(row)"
                 ></el-button>
               </el-tooltip>
               <el-tooltip content="删除spu" placement="top" :open-delay="500">
@@ -113,8 +115,44 @@
       ></AddSpu>
 
       <!-- 添加sku模块 -->
-      <AddSku v-if="show == 2"></AddSku>
+      <AddSku
+        v-if="show == 2"
+        ref="addSku"
+        :editSpu="editSpu"
+        :CategoryId="CategoryId"
+        @showSpuList="showSpuList"
+      ></AddSku>
     </el-card>
+
+    <!-- 弹出框 -->
+    <el-dialog
+      :title="`${spuTitle}的Sku列表`"
+      :visible.sync="dialogTableVisible"
+      @close="closeSkuInfoList"
+    >
+      <el-table :data="skuInfoList" v-loading="loading">
+        <el-table-column
+          prop="skuName"
+          label="名称"
+          align="center"
+        ></el-table-column>
+        <el-table-column
+          prop="price"
+          label="价格"
+          align="center"
+        ></el-table-column>
+        <el-table-column
+          prop="weight"
+          label="重量"
+          align="center"
+        ></el-table-column>
+        <el-table-column label="默认图片" align="center">
+          <template v-slot="{ row }">
+            <img :src="row.skuDefaultImg" style="width: 100px; height: 100px" />
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-dialog>
   </div>
 </template>
 
@@ -142,6 +180,15 @@ export default {
 
       //当前编辑的SpuId
       editSpuID: undefined,
+      //当前添加sku的spu信息
+      editSpu: undefined,
+
+      //存储当前spu的sku信息
+      skuInfoList: [],
+      spuTitle: '',
+      dialogTableVisible: false,
+      //加载动画
+      loading: true,
     }
   },
   components: {
@@ -202,6 +249,7 @@ export default {
       this.show = 0
       //清空editSpuID
       this.editSpuID = undefined
+      this.editSpu = undefined
     },
 
     //1.删除spu列
@@ -218,6 +266,36 @@ export default {
         }
         this.reQuestSpuList(page)
       }
+    },
+    //2.添加Sku
+    addSku(row) {
+      //通过ref方式触发子组件的方法 不行 应为子组件为v-if在dom中不存在3
+      this.editSpu = row
+      this.show = 2
+    },
+    //3.展示sku列表
+    async showSkuInfo(row) {
+      //打开对话框
+      this.dialogTableVisible = true
+      let result = await this.$API.sku.reqSkuInfo(row.id)
+      if (result.code == 200) {
+        //存储信息
+        this.spuTitle = row.spuName
+        this.skuInfoList = result.data
+        //关闭加载动画
+        this.loading = false
+      } else {
+        this.$message({ type: 'error', message: result.message || 'fail' })
+        this.loading = false
+      }
+    },
+    //4.关闭sku列表
+    closeSkuInfoList() {
+      //清空信息
+      this.skuInfoList = []
+      this.spuTitle = ''
+      //开启loading动画
+      this.loading = true
     },
   },
 }
