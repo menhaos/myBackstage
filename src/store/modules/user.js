@@ -1,8 +1,6 @@
 import { login, logout, getInfo } from '@/api/user';
 import { getToken, setToken, removeToken } from '@/utils/auth';
 import { resetRouter, asyncRoutes, constantRoutes } from '@/router';
-import cloneDeep from 'lodash/cloneDeep';
-// console.log(asyncRoutes);
 //1.初始化state仓库
 const getDefaultState = () => {
   return {
