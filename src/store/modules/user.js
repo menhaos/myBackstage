@@ -1,14 +1,35 @@
 import { login, logout, getInfo } from '@/api/user';
 import { getToken, setToken, removeToken } from '@/utils/auth';
-import { resetRouter } from '@/router';
-//初始化state仓库
+import { resetRouter, asyncRoutes, constantRoutes } from '@/router';
+import cloneDeep from 'lodash/cloneDeep';
+// console.log(asyncRoutes);
+//1.初始化state仓库
 const getDefaultState = () => {
   return {
     token: getToken(),
-    name: '',
-    avatar: ''
+    userInfo: {},
+    asyncRoutes: [],
+    resultRoutes: [],
+    constantRoutes: constantRoutes,
   };
 };
+//2.匹配拥有权限的异步路由
+const matchRoutes = (targetArray) => {
+  return targetArray.filter(item => {
+    if (state.userInfo.routes.indexOf(item.name) != -1) {
+      if (item.children && item.children.length > 0) {
+        matchRoutes(item.children);
+      }
+      return true;
+    }
+  });
+};
+//3.合并数组
+const concatRoutes = (array1, array2) => {
+  return [...array1, ...array2];
+};
+
+
 const state = getDefaultState();
 
 const mutations = {
@@ -21,13 +42,14 @@ const mutations = {
     Object.assign(state, getDefaultState());
   },
   //3.存储用户名
-  SET_NAME: (state, name) => {
-    state.name = name;
+  SET_USERINFO: (state, userInfo) => {
+    //存储用户信息
+    state.userInfo = userInfo;
+    //将匹配到的路由组件返回储存
+    state.asyncRoutes = matchRoutes(asyncRoutes);
+    //存储最终展示的路由
+    state.resultRoutes = concatRoutes(state.constantRoutes, state.asyncRoutes);
   },
-  //4.存储avatar
-  SET_AVATAR: (state, avatar) => {
-    state.avatar = avatar;
-  }
 };
 
 const actions = {
@@ -72,9 +94,7 @@ const actions = {
         if (!data) {
           return reject('Verification failed, please Login again.');
         }
-        const { name, avatar } = data;
-        commit('SET_NAME', name);
-        commit('SET_AVATAR', avatar);
+        commit('SET_USERINFO', data);
         resolve(data);
       }).catch(error => {
         reject(error);

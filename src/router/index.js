@@ -30,6 +30,8 @@ import Layout from '@/layout';
  * a base page that does not have permission requirements
  * all roles can be accessed
  */
+
+//共用的路由 所有人都能看见
 export const constantRoutes = [
   //一级路由 登录页面
   {
@@ -57,8 +59,13 @@ export const constantRoutes = [
       meta: { title: '主页', icon: 'dashboard' }
     }]
   },
+  // 404 page must be placed at the end !!!
+  { path: '*', redirect: '/404', hidden: true },
+];
 
-  //一级路由  商品管理
+//需要权限的路由
+export const asyncRoutes = [
+  //商品管理
   {
     name: 'Product',
     path: '/product',
@@ -90,16 +97,65 @@ export const constantRoutes = [
       meta: { title: 'Sku管理' }
     }]
   },
-  // 404 page must be placed at the end !!!
-  { path: '*', redirect: '/404', hidden: true }
+
+  //权限管理 
+  {
+    path: '/acl',
+    component: Layout,
+    name: 'Acl',
+    redirect: 'acl/user/list',
+    meta: {
+      title: '权限管理',
+      icon: 'el-icon-s-tools'
+    },
+    children: [{
+      path: 'user/list',
+      component: () =>
+        import('@/views/acl/user/list'),
+      name: 'User',
+      meta: {
+        title: '用户管理'
+      }
+    },
+    {
+      path: 'role/list',
+      component: () =>
+        import('@/views/acl/role/list'),
+      name: 'Role',
+      meta: {
+        title: '角色管理'
+      }
+    },
+    {
+      path: 'role/auth/:id',
+      component: () =>
+        import('@/views/acl/role/roleAuth'),
+      name: 'RoleAuth',
+      meta: {
+        activeMenu: '/acl/role/list',
+        title: '角色授权'
+      },
+      hidden: true,
+    },
+    {
+      path: 'permission/list',
+      component: () =>
+        import('@/views/acl/permission/list'),
+      name: 'Permission',
+      meta: {
+        title: '菜单管理'
+      }
+    }
+    ]
+  },
 ];
 
+//创建router实例
 const createRouter = () => new Router({
   // mode: 'history', // require service support
   scrollBehavior: () => ({ y: 0 }),
-  routes: constantRoutes
+  routes: [...constantRoutes, ...asyncRoutes]
 });
-
 const router = createRouter();
 
 // Detail see: https://github.com/vuejs/vue-router/issues/1234#issuecomment-357941465
@@ -107,5 +163,6 @@ export function resetRouter () {
   const newRouter = createRouter();
   router.matcher = newRouter.matcher; // reset router
 }
+
 
 export default router;
